@@ -4,8 +4,8 @@ analysis
 #   How many hospitals filed more than one report in the same year? Show your answer as a line graph of the number of hospitals over time.
 pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, TTR, scales, Matching, here, vars, cobalt)
 
-source('sumbission-1/data-code/H1_HCRISv1996.R')
-source('sumbission-1/data-code/H2_HCRISv2010.R')
+source('data-code/H1_HCRISv1996.R')
+source('data-code/H2_HCRISv2010.R')
 
 final.hcris.v1996=read_rds('data/output/HCRIS_Data_v1996.rds')
 final.hcris.v2010=read_rds('data/output/HCRIS_Data_v2010.rds')
@@ -54,16 +54,20 @@ report_counts <- (duplicate.hcris %>%
   group_by(fyear = lubridate::year(fy_start)) %>%
 summarise (num_hospitals = n_distinct(provider_number)))
 
+report_counts
+
 # Create a line graph
-fig.dup.yr <- duplicate.hcris %>% ungroup() %>% group_by(fyear) %>%
-  ggplot(aes(x=as.factor(fyear),y=n_distinct(provider_number))) +
+fig.dup.yr <- report_counts %>% ungroup() %>% group_by(fyear) %>%
+  ggplot(aes(x = fyear, y = num_hospitals)) +
+  geom_line() +
   labs(
     x="Year",
     y="Hospitals With Duplicate Reports",
     title="Duplicate Reports Per Year"
   ) + scale_y_continuous(labels=comma) +
-  theme_bw()
+  theme_minimal()
 plot(fig.dup.yr)
+
 
 # Problem 2
 
@@ -71,10 +75,12 @@ plot(fig.dup.yr)
 
 unique_counts <- (unique.hcris1 %>%
   group_by(fyear = lubridate::year(fy_start)) %>%
-summarise (num_hospitals = n_distinct(provider_number)))
+summarise (num_hospitals2 = n_distinct(provider_number)))
 
-fig.unq.yr <- unique.hcris1 %>% ungroup() %>% group_by(fyear) %>%
-  ggplot(aes(x=as.factor(fyear),y=n_distinct(provider_number))) +
+
+fig.unq.yr <- unique_counts %>% ungroup() %>% group_by(fyear) %>%
+  ggplot(aes(x = (fyear),y = num_hospitals2)) +
+  geom_line()
   labs(
     x="Year",
     y="Hospitals With Unique Reports",
@@ -167,13 +173,22 @@ write_rds(final.hcris.data,'data/output/HCRIS_Data.rds')
 
 #Problem 3 What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
 totcharges <- ggplot(final.hcris.data, aes(x = as.factor(fyear), y = tot_charges)) +
-  geom_violin() +
+  geom_violin(alpha = .9, draw_quantiles = c(0.5)) +
+  geom_jitter(alpha = .05)
   labs(title = "Distribution of Total Charges by Year",
        x = "Year",
        y = "Total Charges")
 plot(totcharges)
 #Problem 4
 # What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
+ totcharges <- ggplot(final.hcris.data, aes(x = as.factor(fyear), y = tot_charges)) +
+  geom_violin(alpha = .9, draw_quantiles = c(0.5)) +
+  geom_jitter(alpha = .05)
+  labs(title = "Distribution of Total Charges by Year",
+       x = "Year",
+       y = "Total Charges")
+plot(totcharges)
+
 
 # Problem 5
 hcris.data <- read_rds(here("data/output/HCRIS_Data.rds"))
@@ -197,6 +212,7 @@ mean.pen <- round(mean(final.hcris$price[which(final.hcris$penalty==1)]),2)
 mean.nopen <- round(mean(final.hcris$price[which(final.hcris$penalty==0)]),2)
 print(mean.pen)
 print(mean.nopen)
+
 # Problem 6 
 # Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
 final.hcris.data <- final.hcris.data %>% 
@@ -213,8 +229,6 @@ summary_table <- final.hcris.data %>%
   group_by(quartile) %>%
   summarise(avg_price_treated = mean(final.hcris$price[which(final.hcris$penalty==1)], na.rm = TRUE),
             avg_price_control = (mean(final.hcris$price[which(final.hcris$penalty==0)], na.rm = TRUE)))
-print(summary_table)
-# Print the summary table
 print(summary_table)
 
 # Problem 7
@@ -259,7 +273,20 @@ m.nn.ps <- Matching::Match(Y=lp.vars$price,
 
 # Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class
  #is this using weighting
+lp.vars <- lp.vars %>%
+  mutate(ipw = case_when(
+    penalty==1 ~ 1/ps,
+    penalty==0 ~ 1/(1-ps),
+    TRUE ~ NA_real_
+  ))
+mean.t1 <- lp.vars %>% filter(penalty==1) %>%
+  select(price, ipw) %>% summarize(mean_p=weighted.mean(price,w=ipw))
+mean.t0 <- lp.vars %>% filter(penalty==0) %>%
+  select(price, ipw) %>% summarize(mean_p=weighted.mean(price,w=ipw))
+mean.t1$mean_p - mean.t0$mean_p
 
+ipw.reg <- lm(price ~ penalty, data=lp.vars, weights=ipw)
+summary(ipw.reg)
 
 # With these different treatment effect estimators, are the results similar, identical, very different?
 
