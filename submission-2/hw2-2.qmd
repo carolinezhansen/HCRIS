@@ -69,7 +69,7 @@ see @ totcharges
 ```{r} 
 #| echo: false
 #| label: totalcharges
-#| fig-cap: "Duplicate Hospital Reports per Year"
+#| fig-cap: "Unique Hospital Reports per Year"
 
 totcharges
 ```
@@ -91,17 +91,15 @@ totcharges
 
 \noindent 5. Calculate the average price among penalized versus non-penalized hospitals.<br>
 
-```
- echo: false
+
+```{r} 
+#| echo: false
 #| label: avgprice
 #| tbl-cap: Average Price Among Penalized Vs Non-Penalized Hospitals
 
-options(knitr.kable.NA = 0)
-knitr::kable(mean.pen, mean.nopen
-             col.names=c("Mean Price Penalized","Mean Price Not Penalized"),
-             format.args=list(big.mark=","), booktabs = TRUE) %>%
-             kable_styling(latex_options=c("scale_down"))
-``` 
+summary_table
+```
+summary table
 
 
 
@@ -110,16 +108,6 @@ knitr::kable(mean.pen, mean.nopen
 \noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.<br>
 
 
-
-A graph of average premiums over time is presented in @fig-premium. Note the spike in premiums in 2014. What's that?
-
-```{r}
-#| echo: false
-#| label: fig-premium
-#| fig-cap: "Average Price Amoung treated/control Groups for each Quartile."
-
-summary_table
-```
 
 
 
