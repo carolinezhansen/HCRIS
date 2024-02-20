@@ -39,8 +39,6 @@ Answer the following based on the enrollment data:
 
 First I use the "deplicate hcris" data to find the count of the hospitals with more than one report in the same fiscal year. Then I used the ggplot function to create the line graph.
 
-see @duplicatecount
-
 ```{r} 
 #| echo: false
 #| label: duplicatecount
@@ -54,12 +52,27 @@ fig.dup.yr
 
 
 
+```{r} 
+#| echo: false
+#| label: uniquecount
+#| fig-cap: "Duplicate Hospital Reports per Year"
+
+fig.unq.yr
+```
+
 
 \newpage
 \noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis..<br>
 
-```
+see @ totcharges
 
+```{r} 
+#| echo: false
+#| label: totalcharges
+#| fig-cap: "Duplicate Hospital Reports per Year"
+
+totcharges
+```
 
 
 
