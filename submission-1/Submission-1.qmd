@@ -1,0 +1,166 @@
+---
+title: "Submission1-HW2"
+subtitle: "Research Methods, Spring 2024"
+author: "Caroline Hansen"
+format:
+  pdf:
+    output-file: "mccarthy-i-hwk1-1"
+    output-ext:  "pdf"
+    header-includes:
+      - \usepackage{float}
+      - \floatplacement{table}{H}
+---
+
+```{r}
+#| include: false
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, readr, readxl, hrbrthemes, fixest,
+               scales, gganimate, gapminder, gifski, png, tufte, plotly, OECD,
+               ggrepel, survey, foreign, devtools, pdftools, kableExtra, modelsummary,
+               kableExtra)
+```{r}
+#| include: false
+#| eval: true
+ 
+load("Hwk2_workspace.Rdata")
+```
+
+
+# Answers for HW 2
+
+\newpage
+# Summarize the Data
+Answer the following based on the enrollment data:
+
+\vspace{.2in}
+\noindent 1. How many hospitals filed more than one report in the same year? Show your answer as a line graph of the number of hospitals over time.<br>
+
+First I use the "deplicate hcris" data to find the count of the hospitals with more than one report in the same fiscal year. Then I used the ggplot function to create the line graph.
+
+see @duplicatecount
+
+```{r} 
+#| echo: false
+#| label: duplicatecount
+#| fig-cap: "Duplicate Hospital Reports per Year"
+
+fig.dup.yr
+```
+
+\newpage
+\noindent 2. After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data? <br>
+
+
+
+
+\newpage
+\noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis..<br>
+
+See @tbl-plans.
+
+```{r} 
+#| echo: false
+#| label: tbl-plans
+#| tbl-cap: "Plan types by year"
+
+options(knitr.kable.NA = 0)
+knitr::kable(plan.type.year1, 
+             col.names=c("Plan Type","2010","2011",
+                         "2012","2013","2014","2015"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+```
+
+
+
+
+\newpage
+\noindent 4. What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
+
+I remove the relevant plans just by applying the relevant filter to the full ma data and then creating the table of plan types. Counts of different plan types with these exclusions are presented in @tbl-plans2
+
+```{r}
+#| echo: false
+#| label: tbl-plans2
+#| tbl-cap: Revised plan types by year
+
+options(knitr.kable.NA = 0)
+knitr::kable(plan.type.year2, 
+             col.names=c("Plan Type","2010","2011",
+                         "2012","2013","2014","2015"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+``` 
+
+
+
+
+\newpage
+# Estimate ATEs
+
+\noindent For the rest of the assignment, you should include only observations in 2012. So we are now dealing with cross-sectional data in which some hospitals are penalized and some are not. Please also define penalty as whether the sum of the HRRP and HVBP amounts are negative (i.e., a net penalty under the two programs). Code to do this is in the class slides. <br>
+
+\noindent 5. Calculate the average price among penalized versus non-penalized hospitals.<br>
+
+```
+ echo: false
+#| label: avgprice
+#| tbl-cap: Average Price Among Penalized Vs Non-Penalized Hospitals
+
+options(knitr.kable.NA = 0)
+knitr::kable(mean.pen, mean.nopen
+             col.names=c("Mean Price Penalized","Mean Price Not Penalized"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+``` 
+
+
+
+\newpage
+
+\noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.<br>
+
+
+
+A graph of average premiums over time is presented in @fig-premium. Note the spike in premiums in 2014. What's that?
+
+```{r}
+#| echo: false
+#| label: fig-premium
+#| fig-cap: "Average Price Amoung treated/control Groups for each Quartile."
+
+summary_table
+```
+
+
+
+\newpage
+\noindent 7.Find the average treatment effect using each of the following estimators, and present your results in a single table:
+
+Nearest neighbor matching (1-to-1) with inverse variance distance based on quartiles of bed size
+Nearest neighbor matching (1-to-1) with Mahalanobis distance based on quartiles of bed size
+Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
+Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class. <br>
+
+
+
+
+\newpage
+
+\vspace{.2in}
+\noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?<br>
+
+
+
+
+\newpage
+\noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)<br>
+
+not done yet :( 
+
+
+\newpage
+\noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated you.<br>
+
+At the moment I am struggling to do questions one and two without fully running the data-code. I have been able to run everything and started on the problems. In addition, I could commit everything to my repository and create a QMD file. 
