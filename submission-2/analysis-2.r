@@ -69,25 +69,7 @@ fig.dup.yr <- report_counts %>% ungroup() %>% group_by(fyear) %>%
 plot(fig.dup.yr)
 
 
-# Problem 2
 
-# After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data?
-
-unique_counts <- (unique.hcris1 %>%
-  group_by(fyear = lubridate::year(fy_start)) %>%
-summarise (num_hospitals2 = n_distinct(provider_number)))
-
-
-fig.unq.yr <- unique_counts %>% ungroup() %>% group_by(fyear) %>%
-  ggplot(aes(x = (fyear),y = num_hospitals2)) +
-  geom_line()
-  labs(
-    x="Year",
-    y="Hospitals With Unique Reports",
-    title="Uniqye Reports Per Year"
-  ) + scale_y_continuous(labels=comma) +
-  theme_bw()
-plot(fig.unq.yr)
 
 ## calculate elapsed time between fy start and fy end for hospitals with multiple reports
 duplicate.hcris = 
@@ -170,24 +152,48 @@ final.hcris.data =
 
 write_rds(final.hcris.data,'data/output/HCRIS_Data.rds')
 
+# Problem 2
+
+# After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data?
+
+num_unique_hospital_ids <- final.hcris.data %>% ungroup() %>% distinct(provider_number) %>%
+  nrow()
+
+# Print the result
+print(num_unique_hospital_ids)
+
 
 #Problem 3 What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
 totcharges <- ggplot(final.hcris.data, aes(x = as.factor(fyear), y = tot_charges)) +
-  geom_violin(alpha = .9, draw_quantiles = c(0.5)) +
-  geom_jitter(alpha = .05)
+  geom_violin(aes(group = cut_width(year,1))) +
   labs(title = "Distribution of Total Charges by Year",
        x = "Year",
        y = "Total Charges")
 plot(totcharges)
 #Problem 4
 # What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
- totcharges <- ggplot(final.hcris.data, aes(x = as.factor(fyear), y = tot_charges)) +
-  geom_violin(alpha = .9, draw_quantiles = c(0.5)) +
-  geom_jitter(alpha = .05)
-  labs(title = "Distribution of Total Charges by Year",
+final.hcris.data <- final.hcris.data %>%
+  mutate(
+    discount_factor = 1 - tot_discounts / tot_charges,
+    price_num = (ip_charges + icu_charges + ancillary_charges) * discount_factor - tot_mcare_payment,
+    price_denom = tot_discharges - mcare_discharges,
+    price = price_num / price_denom
+  )
+
+# Filter out negative prices and potential outliers
+final.hcris.data <- final.hcris.data %>%
+  filter(price >= 0)  # Filter out negative prices
+
+# Create the violin plot
+custom_upper_limit <- 65000
+est.prices <- ggplot(final.hcris.data, aes(x = year, y = price)) +
+  geom_violin(trim = TRUE) +  # Adjust the `trim` parameter as needed
+  labs(title = "Distribution of Estimated Prices by Year",
        x = "Year",
-       y = "Total Charges")
-plot(totcharges)
+       y = "Estimated Price") +
+  theme_minimal() +
+  ylim(0, custom_upper_limit)  # Set custom upper limit for y-axis
+print(est.prices)
 
 
 # Problem 5
@@ -212,7 +218,10 @@ mean.pen <- round(mean(final.hcris$price[which(final.hcris$penalty==1)]),2)
 mean.nopen <- round(mean(final.hcris$price[which(final.hcris$penalty==0)]),2)
 print(mean.pen)
 print(mean.nopen)
-
+pentable <-  final.hcris.data %>%
+summarise(mean.pen, na.rm = TRUE,
+            mean.nopen, na.rm = TRUE)
+print(pentable)
 # Problem 6 
 # Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
 final.hcris.data <- final.hcris.data %>% 
@@ -260,7 +269,7 @@ m.nn.md <- Matching::Match(Y=lp.vars$price,
                            M=1,
                            Weight=2,
                            estimand="ATE")     
-
+print(m.nn.md)
 #Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
 logit.model <- glm(penalty ~ beds + mcaid_discharges + ip_charges + mcare_discharges +
             tot_mcare_payment, family=binomial, data=lp.vars)
@@ -288,6 +297,8 @@ mean.t1$mean_p - mean.t0$mean_p
 ipw.reg <- lm(price ~ penalty, data=lp.vars, weights=ipw)
 summary(ipw.reg)
 
+
+
 # With these different treatment effect estimators, are the results similar, identical, very different?
 
 # Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)
@@ -295,4 +306,4 @@ summary(ipw.reg)
 # Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated or surprised you.# 
 
 
-save.image("data/output/Hwk2_workspace.Rdata")
+save.image("submission-2/Hwk2_workspace.Rdata")

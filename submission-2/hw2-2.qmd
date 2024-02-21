@@ -11,6 +11,7 @@ format:
       - \usepackage{float}
       - \floatplacement{table}{H}
 ---
+https://github.com/carolinezhansen/HCRIS/tree/main
 
 ```{r}
 #| include: false
@@ -54,10 +55,10 @@ fig.dup.yr
 
 ```{r} 
 #| echo: false
-#| label: uniquecount
-#| fig-cap: "Duplicate Hospital Reports per Year"
+#| label: uniquecoutn
+#| tbl-cap: Unique Hospital Count
 
-fig.unq.yr
+unique_counts
 ```
 
 
@@ -80,7 +81,13 @@ totcharges
 \noindent 4. What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
 
 
+```{r} 
+#| echo: false
+#| label: estimateprices
+#| fig-cap: "Estimate Prices Violin Plot"
 
+est.prices
+```
 
 
 
@@ -90,16 +97,14 @@ totcharges
 \noindent For the rest of the assignment, you should include only observations in 2012. So we are now dealing with cross-sectional data in which some hospitals are penalized and some are not. Please also define penalty as whether the sum of the HRRP and HVBP amounts are negative (i.e., a net penalty under the two programs). Code to do this is in the class slides. <br>
 
 \noindent 5. Calculate the average price among penalized versus non-penalized hospitals.<br>
-
-
 ```{r} 
 #| echo: false
-#| label: avgprice
+#| label: pentable
 #| tbl-cap: Average Price Among Penalized Vs Non-Penalized Hospitals
 
-summary_table
+pentable
 ```
-summary table
+
 
 
 
@@ -108,6 +113,14 @@ summary table
 \noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.<br>
 
 
+```{r} 
+#| echo: false
+#| label: avgprice
+#| tbl-cap: Average Price of Hospitals in Quartiles
+
+summary_table
+```
+summary table
 
 
 
@@ -120,7 +133,7 @@ Inverse propensity weighting, where the propensity scores are based on quartiles
 Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class. <br>
 
 
-
+I created the matching and weighting for all 4 estimators, but still have to put it in a table. There is an attempt at this problem, but I am unable to put it in a quarto document.
 
 \newpage
 
@@ -128,15 +141,15 @@ Simple linear regression, adjusting for quartiles of bed size using dummy variab
 \noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?<br>
 
 
-
+The results are every different for each estimate. 
 
 \newpage
 \noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)<br>
 
-not done yet :( 
+I think that it is hard to see the causal effect due to the large difference in all of the estimators. While we were able to see the impact of the penalty, I am still confused about which estimator I should rely on to look at causal effect. 
 
 
 \newpage
 \noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated you.<br>
 
-At the moment I am struggling to do questions one and two without fully running the data-code. I have been able to run everything and started on the problems. In addition, I could commit everything to my repository and create a QMD file. 
+I am getting better and creating graphs and sending it to quarto and github. I was really aggrivated when I was trying to push things to quarto and one small error would make the entire document not run. 
