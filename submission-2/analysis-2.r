@@ -177,20 +177,23 @@ final.hcris.data <- final.hcris.data %>%
     discount_factor = 1 - tot_discounts / tot_charges,
     price_num = (ip_charges + icu_charges + ancillary_charges) * discount_factor - tot_mcare_payment,
     price_denom = tot_discharges - mcare_discharges,
-    price = price_num / price_denom
-  )
+    price = price_num / price_denom)
 
+final.hcris.data <- final.hcris.data %>%
+  mutate(
+    pricenew = price/10000)
 # Filter out negative prices and potential outliers
 final.hcris.data <- final.hcris.data %>%
-  filter(price >= 0)  # Filter out negative prices
+  filter(price >= 0,
+  price<100000)  # Filter out negative prices
 
 # Create the violin plot
 custom_upper_limit <- 65000
-est.prices <- ggplot(final.hcris.data, aes(x = year, y = price)) +
-  geom_violin(trim = TRUE) +  # Adjust the `trim` parameter as needed
+est.prices <- ggplot(final.hcris.data, aes(x = year, y = pricenew)) +
+  geom_violin(aes(group= cut_width(year,1)))
   labs(title = "Distribution of Estimated Prices by Year",
        x = "Year",
-       y = "Estimated Price") +
+       y = "Estimated Price scaled by 10,0000") +
   theme_minimal() +
   ylim(0, custom_upper_limit)  # Set custom upper limit for y-axis
 print(est.prices)
@@ -218,9 +221,8 @@ mean.pen <- round(mean(final.hcris$price[which(final.hcris$penalty==1)]),2)
 mean.nopen <- round(mean(final.hcris$price[which(final.hcris$penalty==0)]),2)
 print(mean.pen)
 print(mean.nopen)
-pentable <-  final.hcris.data %>%
-summarise(mean.pen, na.rm = TRUE,
-            mean.nopen, na.rm = TRUE)
+pentable <-  final.hcris.data %>% ungroup() %>%
+summarise(mean.pen,mean.nopen)
 print(pentable)
 # Problem 6 
 # Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
@@ -243,11 +245,12 @@ print(summary_table)
 # Problem 7
 
 # inverse variance
-lp.vars <- final.hcris %>% 
+lp.vars <- final.hcris %>% ungroup() %>%
   dplyr::select(beds, mcaid_discharges, penalty, ip_charges, 
          mcare_discharges, tot_mcare_payment, price) %>%
   filter(complete.cases(.))
 lp.covs <- lp.vars %>%  dplyr::select(-c("penalty","price"))
+
 
 love.plot(bal.tab(lp.covs,treat=lp.vars$penalty), colors="black", shapes="circle", threshold=0.1) + 
   theme_bw() + theme(legend.position="none")
@@ -269,7 +272,7 @@ m.nn.md <- Matching::Match(Y=lp.vars$price,
                            M=1,
                            Weight=2,
                            estimand="ATE")     
-print(m.nn.md)
+
 #Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
 logit.model <- glm(penalty ~ beds + mcaid_discharges + ip_charges + mcare_discharges +
             tot_mcare_payment, family=binomial, data=lp.vars)
@@ -295,8 +298,17 @@ mean.t0 <- lp.vars %>% filter(penalty==0) %>%
 mean.t1$mean_p - mean.t0$mean_p
 
 ipw.reg <- lm(price ~ penalty, data=lp.vars, weights=ipw)
-summary(ipw.reg)
 
+
+library(cobalt)
+# Extract ATE estimates
+ATE_nn_var <- bal.tab(m.nn.var, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_md <- bal.tab(m.nn.md, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_ps <- bal.tab(m.nn.ps, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_reg <- coef(summary(ipw.reg))["penaltyTRUE", "Estimate"]
+
+(ATE_reg)
+ATE_nn_ps
 
 
 # With these different treatment effect estimators, are the results similar, identical, very different?
