@@ -58,7 +58,7 @@ fig.dup.yr
 #| label: uniquecoutn
 #| tbl-cap: Unique Hospital Count
 
-unique_counts
+num_unique_hospital_ids
 ```
 
 

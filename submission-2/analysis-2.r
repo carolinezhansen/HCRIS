@@ -231,10 +231,9 @@ final.hcris.data <- final.hcris.data %>%
 
 # Creating indicator variables for each quartile
 final.hcris.data <- final.hcris.data %>% 
-  mutate(quartile_1 = ifelse(quartile == 1, 1, 0),
-         quartile_2 = ifelse(quartile == 2, 1, 0),
-         quartile_3 = ifelse(quartile == 3, 1, 0),
-         quartile_4 = ifelse(quartile == 4, 1, 0))
+ mutate(quartile = ntile(beds, 4)) %>%
+  group_by(quartile, beds) %>%
+  summarize(avg_price = mean(final.hcris$price, na.rm = TRUE))
 
 summary_table <- final.hcris.data %>%
   group_by(quartile) %>%
@@ -246,14 +245,11 @@ print(summary_table)
 
 # inverse variance
 lp.vars <- final.hcris %>% ungroup() %>%
-  dplyr::select(beds, mcaid_discharges, penalty, ip_charges, 
-         mcare_discharges, tot_mcare_payment, price) %>%
+  dplyr::select(beds, quartile_1, penalty, quartile_2, 
+         quartile_3, price, quartile_4) %>%
   filter(complete.cases(.))
 lp.covs <- lp.vars %>%  dplyr::select(-c("penalty","price"))
 
-
-love.plot(bal.tab(lp.covs,treat=lp.vars$penalty), colors="black", shapes="circle", threshold=0.1) + 
-  theme_bw() + theme(legend.position="none")
 
 m.nn.var <- Matching::Match(Y=lp.vars$price,
                             Tr=lp.vars$penalty,
