@@ -165,7 +165,7 @@ print(num_unique_hospital_ids)
 
 #Problem 3 What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
 totcharges <- ggplot(final.hcris.data, aes(x = as.factor(fyear), y = tot_charges)) +
-  geom_violin(aes(group = cut_width(year,1))) +
+  geom_violin(aes(group = cut_width(fyear,1))) +
   labs(title = "Distribution of Total Charges by Year",
        x = "Year",
        y = "Total Charges")
@@ -226,7 +226,7 @@ summarise(mean.pen,mean.nopen)
 print(pentable)
 # Problem 6 
 # Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
-final.hcris.data <- final.hcris.data %>% 
+final.hcris.data <- final.hcris.data %>% ungroup %>%
   mutate(quartile = ntile(beds, 4))
 
 # Creating indicator variables for each quartile
@@ -245,10 +245,16 @@ print(summary_table)
 
 # inverse variance
 lp.vars <- final.hcris %>% ungroup() %>%
-  dplyr::select(beds, quartile_1, penalty, quartile_2, 
-         quartile_3, price, quartile_4) %>%
+  dplyr::select(beds, 1, penalty, 2, 
+         3, price, 4) %>%
   filter(complete.cases(.))
 lp.covs <- lp.vars %>%  dplyr::select(-c("penalty","price"))
+
+missing_values <- is.na(lp.vars$penalty)
+
+# Remove or impute missing values
+lp.vars$penalty <- ifelse(missing_values, mean(lp.vars$penalty, na.rm = TRUE), lp.vars$penalty)
+
 
 
 m.nn.var <- Matching::Match(Y=lp.vars$price,
@@ -267,7 +273,8 @@ m.nn.md <- Matching::Match(Y=lp.vars$price,
                            X=lp.covs,
                            M=1,
                            Weight=2,
-                           estimand="ATE")     
+                           estimand="ATE"
+                           na.rm = TRUE)     
 
 #Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
 logit.model <- glm(penalty ~ beds + mcaid_discharges + ip_charges + mcare_discharges +

@@ -141,15 +141,14 @@ I created the matching and weighting for all 4 estimators, but still have to put
 \noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?<br>
 
 
-The results are every different for each estimate. 
+The results are all identical. 
 
 \newpage
 \noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)<br>
 
-I think that it is hard to see the causal effect due to the large difference in all of the estimators. While we were able to see the impact of the penalty, I am still confused about which estimator I should rely on to look at causal effect. 
-
+I think with the different estimtor we were able to see a coorelation for the pentaly. However, I do not think it has a complete causal effect. I don't think that bed size is not the only cause of the penalty, and that other confouding variables.  
 
 \newpage
 \noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated you.<br>
 
-I am getting better and creating graphs and sending it to quarto and github. I was really aggrivated when I was trying to push things to quarto and one small error would make the entire document not run. 
+I am getting better and creating graphs and sending it to quarto and github. I was really aggrivated when I was trying to push things to quarto and one small error would make the entire document not run. I also had to work at individually debugging lines of code which was frustrating. 
