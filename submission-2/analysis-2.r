@@ -250,19 +250,15 @@ lp.vars <- final.hcris %>% ungroup() %>%
   filter(complete.cases(.))
 lp.covs <- lp.vars %>%  dplyr::select(-c("penalty","price"))
 
-missing_values <- is.na(lp.vars$penalty)
-
-# Remove or impute missing values
-lp.vars$penalty <- ifelse(missing_values, mean(lp.vars$penalty, na.rm = TRUE), lp.vars$penalty)
-
-
-
 m.nn.var <- Matching::Match(Y=lp.vars$price,
                             Tr=lp.vars$penalty,
                             X=lp.covs,
-                            M=4,  #<<
+                            M=1,  
                             Weight=1,
                             estimand="ATE")
+
+any(is.na(Tr))
+Tr <- Tr[!is.na(Tr)]
 
 v.name=data.frame(new=c("Beds","Medicaid Discharges", "Inaptient Charges",
                    "Medicare Discharges", "Medicare Payments"))
@@ -273,8 +269,8 @@ m.nn.md <- Matching::Match(Y=lp.vars$price,
                            X=lp.covs,
                            M=1,
                            Weight=2,
-                           estimand="ATE"
-                           na.rm = TRUE)     
+                           estimand="ATE")
+                          
 
 #Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
 logit.model <- glm(penalty ~ beds + mcaid_discharges + ip_charges + mcare_discharges +
@@ -310,8 +306,13 @@ ATE_nn_md <- bal.tab(m.nn.md, covs = lp.covs, treat = lp.vars$penalty)$ATE
 ATE_nn_ps <- bal.tab(m.nn.ps, covs = lp.covs, treat = lp.vars$penalty)$ATE
 ATE_reg <- coef(summary(ipw.reg))["penaltyTRUE", "Estimate"]
 
-(ATE_reg)
-ATE_nn_ps
+estimators <- final.hcris.data %>%
+  summarise(ATE_nn_var,
+            ATE_nn_md,
+            ATE_nn_ps,
+            ATE_reg)
+print(estimators)
+
 
 
 # With these different treatment effect estimators, are the results similar, identical, very different?

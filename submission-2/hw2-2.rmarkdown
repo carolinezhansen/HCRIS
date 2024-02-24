@@ -1,4 +1,3 @@
-
 ---
 title: "Submission2-HW2"
 subtitle: "Research Methods, Spring 2024"
@@ -11,7 +10,9 @@ format:
       - \usepackage{float}
       - \floatplacement{table}{H}
 ---
+
 https://github.com/carolinezhansen/HCRIS/tree/main
+
 
 ```{r}
 #| include: false
@@ -29,6 +30,7 @@ load("Hwk2_workspace.Rdata")
 ```
 
 
+
 # Answers for HW 2
 
 \newpage
@@ -40,6 +42,7 @@ Answer the following based on the enrollment data:
 
 First I use the "deplicate hcris" data to find the count of the hospitals with more than one report in the same fiscal year. Then I used the ggplot function to create the line graph.
 
+
 ```{r} 
 #| echo: false
 #| label: duplicatecount
@@ -48,8 +51,10 @@ First I use the "deplicate hcris" data to find the count of the hospitals with m
 fig.dup.yr
 ```
 
+
 \newpage
 \noindent 2. After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data? <br>
+
 
 
 
@@ -62,10 +67,12 @@ num_unique_hospital_ids
 ```
 
 
+
 \newpage
 \noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis..<br>
 
 see @ totcharges
+
 
 ```{r} 
 #| echo: false
@@ -77,8 +84,10 @@ totcharges
 
 
 
+
 \newpage
 \noindent 4. What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
+
 
 
 ```{r} 
@@ -91,12 +100,14 @@ est.prices
 
 
 
+
 \newpage
 # Estimate ATEs
 
 \noindent For the rest of the assignment, you should include only observations in 2012. So we are now dealing with cross-sectional data in which some hospitals are penalized and some are not. Please also define penalty as whether the sum of the HRRP and HVBP amounts are negative (i.e., a net penalty under the two programs). Code to do this is in the class slides. <br>
 
 \noindent 5. Calculate the average price among penalized versus non-penalized hospitals.<br>
+
 ```{r} 
 #| echo: false
 #| label: pentable
@@ -108,9 +119,11 @@ pentable
 
 
 
+
 \newpage
 
 \noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.<br>
+
 
 
 ```{r} 
@@ -120,6 +133,7 @@ pentable
 
 summary_table
 ```
+
 summary table
 
 
